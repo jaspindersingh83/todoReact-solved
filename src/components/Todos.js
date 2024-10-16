@@ -1,47 +1,54 @@
 import { useState, useEffect } from "react";
-import Todo from "./Todo";
 import "./style.css";
-
-export default function Todos() {
+import Todo from "./Todo";
+const Todos = () => {
+  const [todos, setTodos] = useState(
+    localStorage.getItem("todos")
+      ? [...JSON.parse(localStorage.getItem("todos"))]
+      : []
+  );
   let [newTodo, setNewTodo] = useState("");
-  const [todos, setTodos] = useState([
-    ...JSON.parse(localStorage.getItem("todos")),
-  ]);
   useEffect(() => {
     localStorage.setItem("todos", JSON.stringify(todos));
   }, [todos]);
-
-  const addTodo = () => {
-    let newTodos = [...todos, { name: newTodo, completed: false }];
+  const handleClick = (e) => {
+    e.preventDefault();
+    if (e.key === "Enter") {
+      addTask();
+    } else {
+      newTodo = e.target.value;
+      setNewTodo(newTodo);
+    }
+  };
+  const addTask = () => {
+    const newTodos = [...todos, { text: newTodo.trim(), completed: false }];
     setTodos(newTodos);
     setNewTodo("");
   };
-  const handleInput = (e) => {
-    e.preventDefault();
-    newTodo = e.target.value;
-    setNewTodo(newTodo);
+  const editTask = (idx, newText) => {
+    let newTodos = [...todos];
+    newTodos[idx].text = newText;
+    setTodos(newTodos);
   };
   const deleteAll = () => {
     setTodos([]);
   };
-  const editTask = (idx) => {
+  const toggleTask = (idx) => {
     let newTodos = [...todos];
-    let taskToEdit = newTodos[idx];
-    taskToEdit.completed = !taskToEdit.completed;
+    newTodos[idx].completed = !newTodos[idx].completed;
     setTodos(newTodos);
   };
   return (
-    <div className="todo-container">
-      <h2>To Do List</h2>
-      <div className="input-container">
+    <div className="todo">
+      <h2>To do list</h2>
+      <div className="input__container">
         <input
-          type="text"
-          className="add-task"
           value={newTodo}
-          onChange={handleInput}
-          placeholder="Add Task Here"
-        />
-        <button className="btn" onClick={addTodo}>
+          className="input__field"
+          onChange={handleClick}
+          onKeyUp={handleClick}
+        ></input>
+        <button className="btn" onClick={addTask}>
           Add
         </button>
       </div>
@@ -49,21 +56,25 @@ export default function Todos() {
         {todos.map((todo, idx) => (
           <Todo
             key={idx}
-            index={idx}
-            name={todo.name}
+            idx={idx}
+            text={todo.text}
             completed={todo.completed}
+            toggleTask={toggleTask}
             editTask={editTask}
           />
         ))}
       </ul>
-      <hr className="counter"></hr>
-      <div className="counter-container">
-        <p>{todos.length + " Items Total"}</p>
-        <button className="btn" id="delete-button" onClick={deleteAll}>
+      <div className="counter__container">
+        <p>
+          <span className="counter">{todos.length} </span>
+          Items Total
+        </p>
+        <button id="delete__button" onClick={deleteAll}>
           Delete All
         </button>
       </div>
-      <></>
     </div>
   );
-}
+};
+
+export default Todos;
